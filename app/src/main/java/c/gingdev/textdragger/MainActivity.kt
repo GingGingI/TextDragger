@@ -30,9 +30,9 @@ class MainActivity : AppCompatActivity(),
     override fun onPageSelected(position: Int) {
     }
 
-    var firstText: String = "asdf"
-    var secondText: String = "zxcv"
-    var thirdText: String = "qwer"
+    var firstText: String = "Mercury"
+    var secondText: String = "Earth"
+    var thirdText: String = "Mars"
 
     var dragger: dragger = dragger()
 

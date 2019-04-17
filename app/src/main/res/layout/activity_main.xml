@@ -9,12 +9,13 @@
 
     <TextView
             android:id="@+id/draggableText"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:rotation="90"
 
-            android:textSize="100dp"
+            android:textSize="75sp"
+            android:maxLines="1"
 
             android:fontFamily="sans-serif-thin"
             android:textAllCaps="true"

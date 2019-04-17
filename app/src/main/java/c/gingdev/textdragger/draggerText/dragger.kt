@@ -16,8 +16,6 @@ class dragger {
     fun addText(text: String) {
         if (text.isEng())
             textArray.add(text.toUpperCase())
-//        else
-//            throw IllegalArgumentException("Only English(A~Z)")
     }
     fun addTextAt(position: Int, text: String) {
         if (text.isEng())
@@ -36,35 +34,44 @@ class dragger {
         }
     }
 
+//    Log.e("left", "left: ${leftCharList.toList()}, right: ${rightCharList.toList()}")
+
     private fun TextDvider(position: Int, value: Float): String {
-        if (value < 0.1f)
-            return textArray[position]
+        if (value < 0.1f) return textArray[position]
 
-        val leftCharList = textArray[position].toCharArray()
-        val rightCharList = textArray[if (position + 1 > textArray.size) textArray.size else position + 1].toCharArray()
+        val nextPosition = if (position + 1 > textArray.size) textArray.size else position + 1
+        val charSize = if (textArray[position].length > textArray[nextPosition].length)
+            textArray[position].length
+        else textArray[if (position + 1 > textArray.size) textArray.size else position + 1].length
 
-        val charSize = if (leftCharList.size > rightCharList.size)
-                leftCharList.size
-            else
-                rightCharList.size
+        val leftCharList = CharArray(charSize)
+        val rightCharList = CharArray(charSize)
 
         val charList = StringBuilder()
-        for (i in 0 until charSize)
+        for (i in 0 until charSize) {
+            leftCharList[i] = if (textArray[position].length > i) textArray[position].toCharArray()[i] else ' '
+            rightCharList[i] = if (textArray[nextPosition].length > i) textArray[nextPosition].toCharArray()[i] else ' '
+
             charList.append(computedChar(leftCharList[i], rightCharList[i], value))
+        }
 
         return charList.toString()
     }
 
 //    ((65 + 90) / 2)
 //     value = (a - b) * c
-    private fun computedChar(now: Char, to: Char, value: Float): Char {
-        val ratio = value * (abs(now - to) * 1)
 
-        Log.i("ratio_about_$now",
-            "ratio:${ratio.toInt()}, " +
-                    "now&to:($now, $to), " +
-                    "computed:${if(now.toInt() < to.toInt()) (now.toInt() + ratio.toInt()).toChar() else (to.toInt() - ratio.toInt()).toChar()}, " +
-                    "value: $value")
+//    Log.i("ratio_about_$now",
+//    "ratio:${ratio.toInt()}, " +
+//    "now&to:($now, $to), " +
+//    "computed:${if(now.toInt() < to.toInt()) (now.toInt() + ratio.toInt()).toChar() else (to.toInt() - ratio.toInt()).toChar()}, " +
+//    "value: $value")
+
+    private fun computedChar(left: Char, right: Char, value: Float): Char {
+        val now = if (left == ' ') 'A' else left
+        val to = if (right == ' ') 'A' else right
+
+        val ratio = value * (abs(now - to) * 1)
 
         return if (now.toInt() < to.toInt())
             (now.toInt() + ratio.toInt()).toChar()
