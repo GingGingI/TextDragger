@@ -5,81 +5,77 @@ import android.widget.TextView
 import kotlin.math.abs
 
 class dragger {
-
-    var toText: String? = null
-    var nowText: String? = null
+    var textArray = ArrayList<String>()
 
     var textView: TextView? = null
-
-    var isEnd: Boolean = false
 
     fun setView(textView: TextView) {
         this.textView = textView
     }
 
-    fun from (nowText: String) {
-        this.nowText = nowText.toUpperCase()
+    fun addText(text: String) {
+        if (text.isEng())
+            textArray.add(text.toUpperCase())
+//        else
+//            throw IllegalArgumentException("Only English(A~Z)")
+    }
+    fun addTextAt(position: Int, text: String) {
+        if (text.isEng())
+            textArray.add(position, text.toUpperCase())
+        else
+            throw IllegalArgumentException("Only English(A~Z)")
     }
 
-    fun to (toText: String) {
-        this.toText = toText.toUpperCase()
-    }
-
-    fun drag (value: Float) {
+    fun drag (position: Int, value: Float) {
         textView notNull {
-            if (nowText.isNull() or toText.isNull()) {
-                Log.i("dragger", "Some Value is Null... Check it again.")
+            if (textArray.size > 1) {
+                text = TextDvider(position, value)
             } else {
-                if (!isEnd)
-                    text = TextDvider(value)
+                text = "default"
             }
         }
     }
 
-    fun startDrag() {
-        isEnd = false
-    }
+    private fun TextDvider(position: Int, value: Float): String {
+        if (value < 0.1f)
+            return textArray[position]
 
-    fun endDrag() {
-        isEnd = true
-    }
+        val leftCharList = textArray[position].toCharArray()
+        val rightCharList = textArray[if (position + 1 > textArray.size) textArray.size else position + 1].toCharArray()
 
-    private fun TextDvider(value: Float): String {
-        val nowArray = nowText!!.toCharArray()
-        val toArray = toText!!.toCharArray()
+        val charSize = if (leftCharList.size > rightCharList.size)
+                leftCharList.size
+            else
+                rightCharList.size
 
-        if (nowText!!.isEng() and toText!!.isEng()) {
-            val size = if (nowArray.size > toArray.size) nowArray.size else toArray.size
-            val charList = StringBuilder()
-            for (i in 0 until size) {
-                Log.i("i is ->", "$i")
-                val char = computedChar(nowArray[i], toArray[i], value)
-                charList.append(char)
-            }
-            return charList.toString()
-        } else {
-            return "Default"
-        }
+        val charList = StringBuilder()
+        for (i in 0 until charSize)
+            charList.append(computedChar(leftCharList[i], rightCharList[i], value))
+
+        return charList.toString()
     }
 
 //    ((65 + 90) / 2)
 //     value = (a - b) * c
     private fun computedChar(now: Char, to: Char, value: Float): Char {
-        val ratio = abs(now.toInt() - to.toInt()) * value
+        val ratio = value * (abs(now - to) * 1)
 
-        Log.i("ratio", "${ratio.toInt()}, (${now.toInt()}, ${to.toInt()}), ${(now.toInt() + ratio.toInt()).toChar()}")
+        Log.i("ratio_about_$now",
+            "ratio:${ratio.toInt()}, " +
+                    "now&to:($now, $to), " +
+                    "computed:${if(now.toInt() < to.toInt()) (now.toInt() + ratio.toInt()).toChar() else (to.toInt() - ratio.toInt()).toChar()}, " +
+                    "value: $value")
 
-        return (now.toInt() + ratio.toInt()).toChar()
+        return if (now.toInt() < to.toInt())
+            (now.toInt() + ratio.toInt()).toChar()
+        else
+            (now.toInt() - ratio.toInt()).toChar()
     }
 
-    private fun String.isEng(): Boolean = (typePatterns.engPattern).matcher(this).find()
+    private fun String.isEng(): Boolean = !(typePatterns.engPattern).matcher(this).find()
 
     private infix fun <T> T?.notNull(f: T.(T)-> Unit) {
         if (this != null) f(this)
-    }
-
-    private fun <T> T?.isNull(): Boolean {
-        return this == null
     }
 }
 

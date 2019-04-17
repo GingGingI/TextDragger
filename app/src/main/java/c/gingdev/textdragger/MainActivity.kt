@@ -2,6 +2,7 @@ package c.gingdev.textdragger
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -12,6 +13,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 const val first = 0
 const val second = 1
+const val third = 2
 
 class MainActivity : AppCompatActivity(),
     ViewPager.OnPageChangeListener{
@@ -22,21 +24,15 @@ class MainActivity : AppCompatActivity(),
 
 //    핵심
     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-        dragger.startDrag()
-        dragger.drag(positionOffset)
+        dragger.drag(position, positionOffset)
     }
 
     override fun onPageSelected(position: Int) {
-        dragger.endDrag()
-        if (position == first) {
-            draggableText.text = fromText
-        } else {
-            draggableText.text = toText
-        }
     }
 
-    var fromText: String = "asdf"
-    var toText: String = "zxcv"
+    var firstText: String = "asdf"
+    var secondText: String = "zxcv"
+    var thirdText: String = "qwer"
 
     var dragger: dragger = dragger()
 
@@ -44,14 +40,15 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        draggableText.text = fromText
+        draggableText.text = firstText
 
-        pager.adapter = pagerAdapter(supportFragmentManager, arrayOf(first, second))
+        pager.adapter = pagerAdapter(supportFragmentManager, arrayOf(first, second, third))
         pager.addOnPageChangeListener(this)
 
         dragger.setView(draggableText)
-        dragger.from(fromText)
-        dragger.to(toText)
+        dragger.addText(firstText)
+        dragger.addText(secondText)
+        dragger.addText(thirdText)
     }
 
     private inner class pagerAdapter internal constructor(fm: FragmentManager, private val items: Array<Int>) :
@@ -65,6 +62,7 @@ class MainActivity : AppCompatActivity(),
             when (items[position]) {
                 first -> return SampleFragment()
                 second -> return SampleFragment()
+                third -> return SampleFragment()
                 else -> return SampleFragment()
             }
         }
