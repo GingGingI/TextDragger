@@ -1,9 +1,7 @@
 package c.gingdev.textdragger.draggerText
 
-import android.util.Log
 import android.widget.TextView
 import kotlin.math.abs
-
 
 class dragger {
     var textArray = ArrayList<String>()
@@ -12,16 +10,6 @@ class dragger {
     private val eng = 0
     private val kor = 1
 
-    private val doubleChoWords by lazy(LazyThreadSafetyMode.NONE) {
-        arrayOf(1, 4, 8, 10, 13, 15, 17)
-    }
-    private val doubleJungWords by lazy(LazyThreadSafetyMode.NONE) {
-        arrayOf(2 ,3, 5, 6, 7, 12, 15, 16, 17)
-    }
-    private val doubleJongWords by lazy(LazyThreadSafetyMode.NONE) {
-        arrayOf(2, 3, 5, 6, 9, 10, 11, 12, 13, 14, 15, 18, 20)
-    }
-
     private var type: Int = eng
 
     fun setView(textView: TextView) {
@@ -29,20 +17,19 @@ class dragger {
     }
 
     fun addText(text: String) {
-        if (text.isEng()) {
+        if (text.isEng())
             textArray.add(text.toUpperCase())
-        } else if (text.isKor()) {
-            textArray.add(text)
-            type = kor
-        }
-
+        else if (text.isKor())
+            textArray.add(text).also { type = kor }
     }
 
     fun addTextAt(position: Int, text: String) {
         if (text.isEng())
             textArray.add(position, text.toUpperCase())
+        else if (text.isKor())
+            textArray.add(position, text).also { type = kor }
         else
-            throw IllegalArgumentException("Only English(A~Z)")
+            throw IllegalArgumentException("Only English(A~Z) Or Korean(가~힣)")
     }
 
     fun drag(position: Int, value: Float) {
@@ -58,9 +45,27 @@ class dragger {
         }
     }
 
-    //   English
+    private fun String.isEng(): Boolean = (typePatterns.engPattern).matcher(this).find()
+    private fun String.isKor(): Boolean = (typePatterns.korPattern).matcher(this).find()
+
+    private infix fun <T> T?.notNull(f: T.(T)-> Unit) {
+        if (this != null) f(this)
+    }
+
+//    private fun <T: Comparable<T>> T.Max(maxValue: T): T =
+//        if (this < maxValue) this
+//        else maxValue
+//    private fun <T: Comparable<T>> T.Min(minValue: T): T =
+//        if (this > minValue) this
+//        else minValue
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//   English
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
     private fun TextDvider(position: Int, value: Float): String {
         if (value < 0.1f) return textArray[position]
+        if (value > 0.9f) return textArray[position + 1]
 
         val nextPosition = if (position + 1 > textArray.size) textArray.size else position + 1
         val charSize = if (textArray[position].length > textArray[nextPosition].length)
@@ -81,27 +86,35 @@ class dragger {
         return charList.toString()
     }
 
-//    ((65 + 90) / 2)
-//     value = (a - b) * c
-
-//    Log.i("ratio_about_$now",
-//    "ratio:${ratio.toInt()}, " +
-//    "now&to:($now, $to), " +
-//    "computed:${if(now.toInt() < to.toInt()) (now.toInt() + ratio.toInt()).toChar() else (to.toInt() - ratio.toInt()).toChar()}, " +
-//    "value: $value")
-
     private fun computedChar(left: Char, right: Char, value: Float): Char {
         val now = if (left == ' ') 'A' else left
         val to = if (right == ' ') 'A' else right
-        val ratio = value * (abs(now - to) * 1)
+        val ratio = (value * (abs(now - to)))
 
         return if (now.toInt() < to.toInt()) (now.toInt() + ratio.toInt()).toChar()
         else (now.toInt() - ratio.toInt()).toChar()
     }
 
-    //    Kor
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    Kor
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    private val cho = 0
+    private val jung = 1
+    private val jong = 2
+
+    private val doubleChoWords by lazy(LazyThreadSafetyMode.NONE) {
+        arrayOf(1, 4, 8, 10, 13, 15, 17)
+    }
+    private val doubleJungWords by lazy(LazyThreadSafetyMode.NONE) {
+        arrayOf(2 ,3, 5, 6, 7, 12, 15, 16, 17)
+    }
+    private val doubleJongWords by lazy(LazyThreadSafetyMode.NONE) {
+        arrayOf(2, 3, 5, 6, 9, 10, 11, 12, 13, 14, 15, 18, 20)
+    }
+
     private fun korTextDivider(position: Int, value: Float): String {
         if (value < 0.1f) return textArray[position]
+        if (value > 0.9f) return textArray[position + 1]
 
         val nextPosition = if (position + 1 > textArray.size) textArray.size else position + 1
         val charSize = if (textArray[position].length > textArray[nextPosition].length)
@@ -116,69 +129,60 @@ class dragger {
             leftCharList[i] = if (textArray[position].length > i) textArray[position].toCharArray()[i] else ' '
             rightCharList[i] = if (textArray[nextPosition].length > i) textArray[nextPosition].toCharArray()[i] else ' '
 
-            val jong = leftCharList[i].pureKor() % 28
-            val jung = ((leftCharList[i].pureKor() - jong) / 28) % 21
-            val cho = (((leftCharList[i].pureKor() - jong) / 28) - jung) / 21
+            val computedJong =
+                korComputedChar(
+                    leftCharList[i] pureKorNumber(jong),
+                    rightCharList[i] pureKorNumber(jong),
+                    value).nowDouble(doubleJongWords)
 
-            val tjong = rightCharList[i].pureKor() % 28
-            val tjung = ((rightCharList[i].pureKor() - tjong) / 28) % 21
-            val tcho = (((rightCharList[i].pureKor() - tjong) / 28) - tjung) / 21
+            val computedJung =
+                korComputedChar(
+                    leftCharList[i] pureKorNumber(jung),
+                    rightCharList[i] pureKorNumber(jung),
+                    value).nowDouble(doubleJungWords)
 
-            val computedJong = korComputedChar(jong, tjong, value).nowDoubleJong()
-            val computedJung = korComputedChar(jung, tjung, value).nowDoubleJung()
-            val computedCho = korComputedChar(cho, tcho, value).nowDoubleCho()
+            val computedCho =
+                korComputedChar(
+                    leftCharList[i] pureKorNumber(cho),
+                    rightCharList[i] pureKorNumber(cho),
+                    value).nowDouble(doubleChoWords)
 
-//            Log.i("CJJ", "cho : $cho, jung : $jung, jong : $jong")
-//            Log.i("CJJ To", "cho : $tcho, jung : $tjung, jong : $tjong")
-//
-//            Log.i("CJJ Add", String.format("%%u%02X",0xAC00 + ((cho * 21) + jung ) * 28 + jong))
-            charList.append((0xAC00 + ((computedCho * 21) + computedJung) * 28 + computedJong).toChar())
+            val korChar = (0xAC00 + ((computedCho * 21) + computedJung) * 28 + computedJong).toChar()
+
+
+            if ((typePatterns.korPattern).matcher(korChar.toString()).find())
+                charList.append(korChar)
         }
-//        Log.i("text", "left: ${leftCharList.toList()}, right: ${rightCharList.toList()}")
         return charList.toString()
     }
 
     private fun korComputedChar(left: Int, right: Int, value: Float): Int {
         val now = if (left < 0) 0 else left
         val to = if (right < 0) 0 else right
-//        val ratio = (value) * (abs(now - to) * 1)
-        val ratio = (value) * (abs(now - to) * 1)
+        val ratio = ((value * (abs(now - to))))
 
         return if (now < to) (now + ratio).toInt()
         else (now - ratio).toInt()
     }
 
-//    y=1–(1–t)2f
-
-    private fun Int.nowDoubleCho(): Int = if (this in doubleChoWords) this - 1 else this
-
-    private fun Int.nowDoubleJung(): Int = if (this in doubleJungWords) {
-        var i = 0
-        while (this - i in doubleJungWords) {
-            i++; if (this - i !in doubleJungWords) {
-                break
-            }
-        }
-        this - i
-    } else this
-
-    private fun Int.nowDoubleJong(): Int = if (this in doubleJongWords) {
-        var i = 0
-        while (this - i in doubleJongWords) {
-            i++; if (this - i !in doubleJongWords) {
-                break
-            }
-        }
-        this - i
-    } else this
-
     private fun Char.pureKor(): Int = this.hashCode() - 0xAC00
+    private infix fun Char.pureKorNumber(switcher: Int): Int =
+        when(switcher) {
+            jong -> this.pureKor() % 28
+            jung -> ((this.pureKor() - this.pureKorNumber(jong) % 28) / 28) % 21
+            cho -> (((this.pureKor() - this.pureKorNumber(jong)) / 28) - this.pureKorNumber(jung)) / 21
+            else -> 0
+        }
 
-    private fun String.isEng(): Boolean = (typePatterns.engPattern).matcher(this).find()
-    private fun String.isKor(): Boolean = (typePatterns.korPattern).matcher(this).find()
+    private fun Int.nowDouble(array: Array<Int>): Int = if (this in array) {
+        var i = 0
+        while (this - i in array) {
+            i++; if (this - i !in array) {
+                break
+            }
+        }
+        this - i
+    } else this
 
-    private infix fun <T> T?.notNull(f: T.(T)-> Unit) {
-        if (this != null) f(this)
-    }
 }
 

@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity(),
     }
 
     var firstText: String = "안녕하세요"
-    var secondText: String = "반가워요"
+    var secondText: String = "앟"
     var thirdText: String = "하이룽"
 
     var dragger: dragger = dragger()
