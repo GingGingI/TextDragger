@@ -52,12 +52,12 @@ class dragger {
         if (this != null) f(this)
     }
 
-//    private fun <T: Comparable<T>> T.Max(maxValue: T): T =
-//        if (this < maxValue) this
-//        else maxValue
-//    private fun <T: Comparable<T>> T.Min(minValue: T): T =
-//        if (this > minValue) this
-//        else minValue
+    private fun <T: Comparable<T>> T.Max(maxValue: T): T =
+        if (this < maxValue) this
+        else maxValue
+    private fun <T: Comparable<T>> T.Min(minValue: T): T =
+        if (this > minValue) this
+        else minValue
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,19 +80,22 @@ class dragger {
             leftCharList[i] = if (textArray[position].length > i) textArray[position].toCharArray()[i] else ' '
             rightCharList[i] = if (textArray[nextPosition].length > i) textArray[nextPosition].toCharArray()[i] else ' '
 
-            charList.append(computedChar(leftCharList[i], rightCharList[i], value))
+            charList.append(computedChar(leftCharList[i], rightCharList[i], value, i))
         }
 
         return charList.toString()
     }
 
-    private fun computedChar(left: Char, right: Char, value: Float): Char {
+    private fun computedChar(left: Char, right: Char, value: Float, charNumber: Int): Char {
         val now = if (left == ' ') 'A' else left
         val to = if (right == ' ') 'A' else right
-        val ratio = (value * (abs(now - to)))
+        val ratio = ((value * (abs(now - to))) * (1 + (0.1 * charNumber))).toInt().Min(0).Max(abs(now - to))
 
-        return if (now.toInt() < to.toInt()) (now.toInt() + ratio.toInt()).toChar()
-        else (now.toInt() - ratio.toInt()).toChar()
+        if (left == ' ' && (value * (1 + (0.35 * charNumber))) < 0.1) return ' '
+        if (right == ' ' && (value * (1 + (0.35 * charNumber))) > 0.9) return ' '
+
+        return if (now.toInt() < to.toInt()) (now.toInt() + ratio).toChar()
+        else (now.toInt() - ratio).toChar()
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,25 +132,29 @@ class dragger {
             leftCharList[i] = if (textArray[position].length > i) textArray[position].toCharArray()[i] else ' '
             rightCharList[i] = if (textArray[nextPosition].length > i) textArray[nextPosition].toCharArray()[i] else ' '
 
+            var stack: Int = 0
+
             val computedJong =
                 korComputedChar(
                     leftCharList[i] pureKorNumber(jong),
                     rightCharList[i] pureKorNumber(jong),
-                    value).nowDouble(doubleJongWords)
+                    value, i) CheckValue { stack += 1 } noDouble(doubleJongWords)
 
             val computedJung =
                 korComputedChar(
                     leftCharList[i] pureKorNumber(jung),
                     rightCharList[i] pureKorNumber(jung),
-                    value).nowDouble(doubleJungWords)
+                    value, i) CheckValue { stack += 1 } noDouble(doubleJungWords)
 
             val computedCho =
                 korComputedChar(
                     leftCharList[i] pureKorNumber(cho),
                     rightCharList[i] pureKorNumber(cho),
-                    value).nowDouble(doubleChoWords)
+                    value, i) CheckValue { stack += 1 } noDouble(doubleChoWords)
 
-            val korChar = (0xAC00 + ((computedCho * 21) + computedJung) * 28 + computedJong).toChar()
+            val korChar: Char = if (stack < 3)
+               (0xAC00 + ((computedCho * 21) + computedJung) * 28 + computedJong).toChar()
+            else (0x20).toChar()
 
 
             if ((typePatterns.korPattern).matcher(korChar.toString()).find())
@@ -156,13 +163,16 @@ class dragger {
         return charList.toString()
     }
 
-    private fun korComputedChar(left: Int, right: Int, value: Float): Int {
+    private fun korComputedChar(left: Int, right: Int, value: Float, charNumber: Int): Int? {
         val now = if (left < 0) 0 else left
         val to = if (right < 0) 0 else right
-        val ratio = ((value * (abs(now - to))))
+        val ratio = ((value * (abs(now - to))) * (1 + (0.1 * charNumber))).toInt().Min(0).Max(abs(now - to))
 
-        return if (now < to) (now + ratio).toInt()
-        else (now - ratio).toInt()
+        if (left < 0 && (value * (1 + (0.35 * charNumber))) < 0.1) return null
+        if (right < 0 && (value * (1 + (0.35 * charNumber))) > 0.9) return null
+
+        return if (now < to) (now + ratio)
+        else (now - ratio)
     }
 
     private fun Char.pureKor(): Int = this.hashCode() - 0xAC00
@@ -174,7 +184,14 @@ class dragger {
             else -> 0
         }
 
-    private fun Int.nowDouble(array: Array<Int>): Int = if (this in array) {
+    private infix fun Int?.CheckValue(f: Int?.()-> Unit): Int {
+        return if (this == null) {
+            f()
+            0
+        } else this
+    }
+
+    private infix fun Int.noDouble(array: Array<Int>): Int = if (this in array) {
         var i = 0
         while (this - i in array) {
             i++; if (this - i !in array) {

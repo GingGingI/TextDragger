@@ -15,8 +15,8 @@ const val third = 2
 class MainActivity : AppCompatActivity() {
 
     var firstText: String = "안녕하세요"
-    var secondText: String = "앟"
-    var thirdText: String = "하이룽"
+    var secondText: String = "하위"
+    var thirdText: String = "잘있어"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
