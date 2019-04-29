@@ -109,7 +109,7 @@ class dragger {
         arrayOf(1, 4, 8, 10, 13, 15, 17)
     }
     private val doubleJungWords by lazy(LazyThreadSafetyMode.NONE) {
-        arrayOf(2 ,3, 5, 6, 7, 12, 15, 16, 17)
+        arrayOf(2 ,3, 5, 6, 7, 10, 12, 13, 15, 16, 17, 19)
     }
     private val doubleJongWords by lazy(LazyThreadSafetyMode.NONE) {
         arrayOf(2, 3, 5, 6, 9, 10, 11, 12, 13, 14, 15, 18, 20)
@@ -168,8 +168,8 @@ class dragger {
         val to = if (right < 0) 0 else right
         val ratio = ((value * (abs(now - to))) * (1 + (0.1 * charNumber))).toInt().Min(0).Max(abs(now - to))
 
-        if (left < 0 && (value * (1 + (0.35 * charNumber))) < 0.1) return null
-        if (right < 0 && (value * (1 + (0.35 * charNumber))) > 0.9) return null
+        if (left < 0 && (value * (1 + (0.35 * charNumber))) < 0.4) return null
+        if (right < 0 && (value * (1 + (0.35 * charNumber))) > 0.6) return null
 
         return if (now < to) (now + ratio)
         else (now - ratio)
