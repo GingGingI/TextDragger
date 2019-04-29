@@ -16,18 +16,18 @@ class dragger {
         this.textView = textView
     }
 
-    fun addText(text: String): Int {
+    fun addText(text: String) {
         when {
-            text.isEng() -> textArray.add(text.toUpperCase()).also { return textArray.size }
-            text.isKor() -> textArray.add(text).also { type = kor; return textArray.size }
+            text.isEng() -> textArray.add(text.toUpperCase())
+            text.isKor() -> textArray.add(text).also { type = kor }
             else -> throw IllegalArgumentException("Only English(A~Z) Or Korean(가~힣)")
         }
     }
 
-    fun addTextAt(position: Int, text: String): Int {
+    fun addTextAt(position: Int, text: String) {
         when {
-            text.isEng() -> textArray.add(position, text.toUpperCase()).also { return textArray.size }
-            text.isKor() -> textArray.add(position, text).also { type = kor; return textArray.size }
+            text.isEng() -> textArray.add(position, text.toUpperCase())
+            text.isKor() -> textArray.add(position, text).also { type = kor }
             else -> throw IllegalArgumentException("Only English(A~Z) Or Korean(가~힣)")
         }
     }
