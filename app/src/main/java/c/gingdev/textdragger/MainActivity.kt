@@ -2,7 +2,6 @@ package c.gingdev.textdragger
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
@@ -54,21 +53,18 @@ class MainActivity : AppCompatActivity(),
     private inner class pagerAdapter internal constructor(fm: FragmentManager, private val items: Array<Int>) :
         FragmentStatePagerAdapter(fm) {
 
-        override fun getItem(position: Int): Fragment {
-            return getFragments(position)
-        }
+        override fun getItem(position: Int): Fragment =
+            getFragments(position)
 
-        fun getFragments(position: Int): Fragment {
+        fun getFragments(position: Int): Fragment =
             when (items[position]) {
-                first -> return SampleFragment()
-                second -> return SampleFragment()
-                third -> return SampleFragment()
-                else -> return SampleFragment()
+                first -> SampleFragment()
+                second -> SampleFragment()
+                third -> SampleFragment()
+                else -> SampleFragment()
             }
-        }
 
-        override fun getCount(): Int {
-            return items.size
-        }
+        override fun getCount(): Int =
+            items.size
     }
 }
