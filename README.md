@@ -1,6 +1,10 @@
 # TextDragger
 [![](https://jitpack.io/v/GingGingI/Textdragger.svg)](https://jitpack.io/#GingGingI/Textdragger)
 
+![](https://media.giphy.com/media/Swlx3kICIORyxGOA3t/giphy.gif)
+===========
+### SetUp
+
 Step 1. JitPack을 빌드단위 gradle에 추가 (Add it in your root build.gradle at the end of repositories:)
 
 gradle
